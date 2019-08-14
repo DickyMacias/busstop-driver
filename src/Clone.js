@@ -19,13 +19,15 @@ class Clone extends Component {
         } else {
             console.log("No se ha recibido ningún parámetro");
         }
-        let bus_id = "https://busstop-api.herokuapp.com/rutas?camion="+estacion+""
+        let bus_id = "https://busstopcuu-api.herokuapp.com/rutas?camion="+estacion+"&_sort=id&_order=asc"
         console.log(bus_id)
-        let r = setTimeout(axios.get(bus_id)
-        .then(res => {
-            const rutas = res.data;
-            this.setState({ rutas });
-        }), 500);
+        setInterval(async () => { await axios.get(bus_id)
+            .then(res => { const rutas = res.data;
+                // Se envian al metodo state los resultados del JSON
+                this.setState({ rutas });
+            })}, 500);
+
+        
         
 
     }

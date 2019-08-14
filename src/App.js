@@ -19,6 +19,7 @@ class App extends Component {
 
         if (url_params) {
             var estacion = url_params['camion'];
+            var camion = url_params['UTCH'];
             this.station = estacion;
             // for(var index in url_params)
             // {
@@ -32,15 +33,47 @@ class App extends Component {
         console.log("este es antes" + a)
         console.log("este es despues" + d)
         console.log("este es el nombre " + estacion)
-        let beacon_url = "https://busstop-api.herokuapp.com/rutas?camion=" + estacion +""
+        let beacon_url = "https://busstopcuu-api.herokuapp.com/rutas?camion=" + estacion +"&_sort=id&_order=asc"
         console.log(beacon_url)
-        let r = setTimeout(axios.get(beacon_url)
-        .then(res => {
-            const rutas = res.data;
-            this.setState({ rutas });
-        }), 500);
-        
+        setInterval(async () => { await axios.get(beacon_url)
+            .then(res => { const rutas = res.data;
+                // Se envian al metodo state los resultados del JSON
+                this.setState({ rutas });
+            })}, 500);
 
+        axios.put("https://busstopcuu-api.herokuapp.com/rutas/101076", {
+
+            "ruta": "Ruta 1",
+            "estacion": "UTCH",
+            "camion": "101",
+            "id": 101076,
+            "hora": "21:00",
+            "check": "2"
+            
+        }).then(resp => {
+        
+            console.log(resp.data);
+        }).catch(error => {
+        
+            console.log(error);
+        });  
+
+        // fetch("http://localhost:3000/rutas?camion=101&estacion=UTCH&hora=6:00", {
+        //     method: 'PUT',
+        //     body: JSON.stringify({
+        //         id: 101001,
+        //         estacion: 'UTCH',
+        //         camion: '101',
+        //         hora: '6:00',
+        //         check: '1',
+        //     }),
+        //     headers: {
+        //         "Content-type": "application/json; charset=UTF-8"
+        //     }
+        //     })
+        //     .then(response => response.json())
+        //     .then(json => console.log(json))
+        
     }
 
     render() {
