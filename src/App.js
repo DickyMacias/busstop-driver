@@ -7,15 +7,21 @@ import { Container, Row, Col, Card, CardBody } from "shards-react";
 
 class App extends Component {
 
-    state = {
-        rutas: []
+    constructor(props){
+        super(props);
+    this.state = {
+        rutas: [],
     }
+}
     componentDidMount() {
         // Cargar parametros desde URL
         var url_params = getParam();
         let hora = timeReader();
-        let a = parseInt(hora) - 1;
-        let d = parseInt(hora) + 1;
+        let min = minuteReader();
+        hora = parseInt(hora);
+        let a = hora - 1;
+        let d = hora + 1;
+        min = parseInt(min);
 
         if (url_params) {
             var estacion = url_params['camion'];
@@ -41,38 +47,8 @@ class App extends Component {
                 this.setState({ rutas });
             })}, 500);
 
-        axios.put("https://busstopcuu-api.herokuapp.com/rutas/101076", {
 
-            "ruta": "Ruta 1",
-            "estacion": "UTCH",
-            "camion": "101",
-            "id": 101076,
-            "hora": "21:00",
-            "check": "2"
-            
-        }).then(resp => {
-        
-            console.log(resp.data);
-        }).catch(error => {
-        
-            console.log(error);
-        });  
-
-        // fetch("http://localhost:3000/rutas?camion=101&estacion=UTCH&hora=6:00", {
-        //     method: 'PUT',
-        //     body: JSON.stringify({
-        //         id: 101001,
-        //         estacion: 'UTCH',
-        //         camion: '101',
-        //         hora: '6:00',
-        //         check: '1',
-        //     }),
-        //     headers: {
-        //         "Content-type": "application/json; charset=UTF-8"
-        //     }
-        //     })
-        //     .then(response => response.json())
-        //     .then(json => console.log(json))
+        checador(estacion,hora,min);
         
     }
 
@@ -144,10 +120,90 @@ function timeReader() {
     return h;
 }
 
+function minuteReader() {
+    let today = new Date();
+    let m = today.getMinutes();
+    let t = setTimeout(minuteReader, 500);
+    return m;
+}
+
 function checkTime(i) {
     if (i < 10) { i = "0" + i }; // add zero in front of numbers < 10
     return i;
 }
 
+
+function checador(estacion,hora,min){
+
+    let minute = minuteSetter(min);
+    let checker = minuteChecker(min);
+    console.log(minute);
+    console.log(checker);
+
+    var url_timer = "https://busstopcuu-api.herokuapp.com/rutas?camion="+estacion+"&hora="+hora+":"+minute+"";
+
+    console.log(url_timer);
+    axios.get(url_timer)
+            .then(res => { var entradas = JSON.stringify((res.data));
+                let entrada = entradas.slice(1, entradas.length -1);
+                entrada = JSON.parse(entrada);
+                
+                var _id = entrada.id;
+                console.log(_id);
+                var _ruta = entrada.ruta;
+                console.log(_ruta);
+                var _estacion = entrada.estacion;
+                console.log(_estacion);
+                var _hora = entrada.hora;
+                console.log(_hora);
+                var _camion = entrada.camion;
+                console.log(_camion);
+                var _check = entrada.check;
+                console.log(_check);
+
+                axios.put("https://busstopcuu-api.herokuapp.com/rutas/"+_id+"", {
+
+                    "ruta": ""+_ruta+"",
+                    "estacion": ""+_estacion+"",
+                    "camion": ""+_camion+"",
+                    "id": _id,
+                    "hora": ""+_hora+"",
+                    "check": ""+checker+""
+                    
+                }).then(resp => {
+                    console.log(resp.data);
+                }).catch(error => {
+                    console.log(error);
+                }); 
+
+            })
+}
+
+
+function minuteChecker(min){
+    let check = 0;
+    if ((min>=0&&min<3)||(min>=11&&min<15)||(min>=23&&min<27)||(min>=35&&min<39)||(min>=47&&min<51)||(min>=59)){
+        check = 1;
+    }else if ((min>=3&&min<11)||(min>=15&&min<23)||(min>=27&&min<35)||(min>=39&&min<47)||(min>=51&&min<59)){
+        check = 2;
+    }
+    return check;
+}
+
+function minuteSetter(min){
+    let minute ="";
+    if ((min>=0&&min<11)||(min>=59)){
+        minute = "00";
+    } else if (min>=11&&min<23){
+        minute = "12";
+    } else if (min>=23&&min<35){
+        minute = "24";
+    } else if (min>=35&&min<47){
+        minute = "36";
+    } else if (min>=47&&min<59){
+        minute = "48";
+    }
+    return minute;
+}
 
 export default App;
